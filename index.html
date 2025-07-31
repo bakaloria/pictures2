@@ -64,7 +64,7 @@
     // ==================================================================
     // الخطوة 3: الصق رابط تطبيق الويب الذي نسخته هنا
     // ==================================================================
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwTOnCx24uU2aqAk5k6qPyelzIpxS030q4O3QsxB0aINQfYiHljEnMAg8gE6kyk5--e/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyubYvK0VaGs7NQgEgNcZmeIcVC2KMo011DdY-lbV89g66K54EDKZZF2QnPnHSYyydb/exec';
     // ==================================================================
 
     let allQuestions = [];
@@ -76,7 +76,7 @@
       const setupScreen = document.getElementById('setup-screen');
       loadingState.style.display = 'block';
 
-      if (!WEB_APP_URL || WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbwTOnCx24uU2aqAk5k6qPyelzIpxS030q4O3QsxB0aINQfYiHljEnMAg8gE6kyk5--e/exec') {
+      if (!WEB_APP_URL || WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbyubYvK0VaGs7NQgEgNcZmeIcVC2KMo011DdY-lbV89g66K54EDKZZF2QnPnHSYyydb/exec') {
           alert('خطأ: الرجاء تعديل ملف HTML وإدخال رابط تطبيق الويب (WEB_APP_URL).');
           loadingState.innerHTML = '<h2>خطأ في الإعداد. يرجى مراجعة المطور.</h2>';
           return;
