@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>اختبار رسومات العلوم</title>
+  <style>
+    /* نفس تصميم CSS من الإجابة السابقة */
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; text-align: right; background-color: #f4f4f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .container { width: 100%; max-width: 750px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1 ); }
+    h1, h2 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-top: 0; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: bold; color: #34495e; }
+    input[type="text"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+    button { display: block; width: 100%; padding: 14px; background: linear-gradient(45deg, #2980b9, #3498db); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; transition: transform 0.2s, box-shadow 0.2s; }
+    button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4); }
+    #quiz-area, #results, #loading-state { display: none; margin-top: 25px; text-align: center; }
+    .question-card { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 12px; background-color: #fafafa; text-align: right; }
+    .question-card img { max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; }
+    .answer-inputs { display: grid; grid-template-columns: 1fr; gap: 15px; }
+    .input-group { display: flex; align-items: center; gap: 10px; }
+    .input-group span { font-weight: bold; font-size: 1.1em; color: #3498db; min-width: 25px; }
+    #results { text-align: center; padding: 25px; border: 2px solid #2ecc71; border-radius: 12px; background-color: #e8f8ef; }
+    .correct-answer-feedback { color: #27ae60; font-size: 0.9em; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div id="loading-state">
+      <h2>جاري تحميل بيانات الاختبار...</h2>
+      <p>الرجاء الانتظار قليلاً.</p>
+    </div>
+
+    <div id="setup-screen" style="display:none;">
+      <h1>اختبار رسومات العلوم</h1>
+      <div class="form-group">
+        <label for="student-name">اسم الطالب:</label>
+        <input type="text" id="student-name" placeholder="أدخل اسمك هنا">
+      </div>
+      <div class="form-group">
+        <label for="num-questions">اختر عدد الرسمات (1-5):</label>
+        <select id="num-questions">
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+        </select>
+      </div>
+      <button id="start-btn">بدء الاختبار</button>
+    </div>
+
+    <div id="quiz-area">
+      <h2 id="student-display-name"></h2>
+      <div id="questions-container"></div>
+      <button id="submit-btn">إنهاء وتسليم الإجابات</button>
+    </div>
+
+    <div id="results">
+      <h2>النتيجة</h2>
+      <p id="score" style="font-size: 1.2em; font-weight: bold;"></p>
+      <p id="feedback" style="font-size: 1.1em;"></p>
+    </div>
+  </div>
+
+  <script>
+    // ==================================================================
+    // الخطوة 3: الصق رابط تطبيق الويب الذي نسخته هنا
+    // ==================================================================
+    const WEB_APP_URL = 'الصق-رابط-تطبيق-الويب-الخاص-بك-هنا';
+    // ==================================================================
+
+    let allQuestions = [];
+    let selectedQuestions = [];
+
+    // جلب البيانات من تطبيق الويب عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+      const loadingState = document.getElementById('loading-state');
+      const setupScreen = document.getElementById('setup-screen');
+      loadingState.style.display = 'block';
+
+      if (!WEB_APP_URL || WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbwTOnCx24uU2aqAk5k6qPyelzIpxS030q4O3QsxB0aINQfYiHljEnMAg8gE6kyk5--e/exec') {
+          alert('خطأ: الرجاء تعديل ملف HTML وإدخال رابط تطبيق الويب (WEB_APP_URL).');
+          loadingState.innerHTML = '<h2>خطأ في الإعداد. يرجى مراجعة المطور.</h2>';
+          return;
+      }
+
+      fetch(WEB_APP_URL)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            throw new Error(data.error);
+          }
+          allQuestions = data;
+          loadingState.style.display = 'none';
+          setupScreen.style.display = 'block';
+        })
+        .catch(error => {
+          console.error('Error fetching quiz data:', error);
+          loadingState.innerHTML = `<h2>فشل تحميل بيانات الاختبار.</h2><p>تأكد من صحة الرابط وأنك اتبعت خطوات النشر بشكل صحيح. (${error})</p>`;
+        });
+    });
+    
+    // بقية كود الجافاسكربت يبقى كما هو بدون تغيير...
+    
+    function getDirectDriveLink(url) {
+      const fileId = url.match(/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileId && fileId[1]) {
+        return `https://lh3.googleusercontent.com/d/${fileId[1]}`;
+      }
+      return url.replace("/view?usp=drive_link", "" ).replace("file/d/", "uc?id=");
+    }
+
+    document.getElementById('start-btn').addEventListener('click', function() {
+      const studentName = document.getElementById('student-name').value.trim();
+      const numQuestions = parseInt(document.getElementById('num-questions').value);
+
+      if (!studentName) {
+        alert('الرجاء إدخال اسمك.');
+        return;
+      }
+      if (allQuestions.length < numQuestions) {
+        alert(`لا يوجد عدد كافٍ من الأسئلة المتاحة. متوفر فقط ${allQuestions.length} سؤال.`);
+        return;
+      }
+
+      document.getElementById('setup-screen').style.display = 'none';
+      document.getElementById('quiz-area').style.display = 'block';
+      document.getElementById('student-display-name').innerText = `بالتوفيق، ${studentName}!`;
+
+      selectedQuestions = shuffleArray([...allQuestions]).slice(0, numQuestions);
+      displayQuestions();
+    });
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function displayQuestions() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = '';
+      selectedQuestions.forEach((q, index) => {
+        const imageUrl = getDirectDriveLink(q.url);
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `
+          <h3>الرسمة ${index + 1}: ${q.lesson}</h3>
+          <img src="${imageUrl}" alt="رسمة ${q.lesson}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <p style="display:none; color:red;">خطأ في تحميل الصورة. تأكد من أن الرابط صحيح وأن الصورة متاحة للجميع.</p>
+          <div class="answer-inputs">
+            ${q.answers.map((_, i) => `
+              <div class="input-group">
+                <span>${i + 1}.</span>
+                <input type="text" class="user-answer" placeholder="اكتب اسم الجزء المشار إليه بالرقم ${i + 1}">
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    document.getElementById('submit-btn').addEventListener('click', function() {
+      let score = 0;
+      const totalAnswers = selectedQuestions.reduce((acc, q) => acc + q.answers.length, 0);
+      const questionCards = document.querySelectorAll('.question-card');
+
+      questionCards.forEach((card, qIndex) => {
+        const userInputs = card.querySelectorAll('.user-answer');
+        const correctAnswers = selectedQuestions[qIndex].answers;
+        
+        userInputs.forEach((input, aIndex) => {
+          const isCorrect = input.value.trim().toLowerCase() === correctAnswers[aIndex].trim().toLowerCase();
+          if (isCorrect) {
+            score++;
+            input.style.backgroundColor = '#d4edda';
+            input.style.borderColor = '#28a745';
+          } else {
+            input.style.backgroundColor = '#f8d7da';
+            input.style.borderColor = '#dc3545';
+            const correctAnswerFeedback = document.createElement('div');
+            correctAnswerFeedback.className = 'correct-answer-feedback';
+            correctAnswerFeedback.innerText = `الإجابة الصحيحة: ${correctAnswers[aIndex]}`;
+            input.parentElement.appendChild(correctAnswerFeedback);
+          }
+          input.disabled = true;
+        });
+      });
+
+      document.getElementById('submit-btn').style.display = 'none';
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.style.display = 'block';
+      document.getElementById('score').innerText = `نتيجتك هي: ${score} من ${totalAnswers}`;
+      
+      let feedback = '';
+      const percentage = totalAnswers > 0 ? (score / totalAnswers) * 100 : 0;
+      if (percentage >= 90) feedback = 'ممتاز! عمل رائع!';
+      else if (percentage >= 70) feedback = 'جيد جداً! استمر في المذاكرة.';
+      else if (percentage >= 50) feedback = 'مقبول. تحتاج إلى المزيد من المراجعة.';
+      else feedback = 'حاول مرة أخرى! يمكنك تحقيق نتيجة أفضل.';
+      document.getElementById('feedback').innerText = feedback;
+      
+      resultsDiv.scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
+
+</body>
+</html>
